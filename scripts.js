@@ -44,8 +44,9 @@ const courses = [
         description: 'This is free for everyone.',
         price: 0,
         category: 'python',
-        image: 'pythonquiz.png',
-        startQuiz: 'quiz.html'
+        image: 'quiz.png',
+        startQuiz: 'quis.html',
+        messengerLink: 'https://m.me/424216210783420',
     }
 ];
 
@@ -65,7 +66,7 @@ function displayCourses(courses) {
                 <div class="price">${course.price > 0 ? `$${course.price.toFixed(2)}` : 'Free'}</div>
                 ${course.price > 0 
                     ? `<button class="enroll-btn" onclick="window.open('${course.formLink}', '_blank')">Buy Now</button>`
-                    : `<button class="enroll-btn" onclick="window.location.href='${course.startQuiz}'">Start Quiz</button>`
+                    : `<button class="enroll-btn" onclick="window.location.href='${course.startQuiz}'">Free Quiz</button>`
                 }
                 <button class="messenger-btn" onclick="window.open('${course.messengerLink}', '_blank')">Message Us</button>
             </div>
