@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  STUDENT
+  TUTOR
+  ADMIN
+}
+
+enum TransactionType {
+  PURCHASE
+  SPEND
+  ADMIN_ADD
+}
+
+// Main users table for Luminory
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  phone         String?
+  phoneVerified Boolean   @default(false)
+  role          UserRole  @default(STUDENT)
+  coins         Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  posts         Post[]
+  transactions  Transaction[]
+  viewedPosts   PostView[]
+  viewedPhones  PhoneView[]
+
+  @@map("users")
+}
+
+model Post {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  authorId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  author      User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  views       PostView[]
+  phoneViews  PhoneView[]
+
+  @@map("posts")
+}
+
+model PostView {
+  id       String   @id @default(cuid())
+  postId   String
+  tutorId  String
+  viewedAt DateTime @default(now())
+
+  // Relations
+  post     Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tutor    User     @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, tutorId])
+  @@map("post_views")
+}
+
+model PhoneView {
+  id       String   @id @default(cuid())
+  postId   String
+  tutorId  String
+  viewedAt DateTime @default(now())
+
+  // Relations
+  post     Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tutor    User     @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, tutorId])
+  @@map("phone_views")
+}
+
+model Transaction {
+  id          String          @id @default(cuid())
+  userId      String
+  type        TransactionType
+  amount      Int
+  description String?
+  createdAt   DateTime        @default(now())
+
+  // Relations
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("transactions")
+}
