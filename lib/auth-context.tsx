@@ -39,7 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (firebaseUser) {
         // Fetch user role from database
         try {
-          const response = await fetch(`/api/user/role?email=${firebaseUser.email}`)
+          const response = await fetch(`/api/user/role?email=${encodeURIComponent(firebaseUser.email || "")}`)
           if (response.ok) {
             const data = await response.json()
             setUserRole(data.role)
@@ -65,6 +65,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await firebaseSignOut(auth)
       setUser(null)
       setUserRole(null)
+      // Redirect to home page after sign out
+      window.location.href = "/"
     } catch (error) {
       console.error("Error signing out:", error)
     }

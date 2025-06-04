@@ -31,7 +31,14 @@ export async function GET(request: NextRequest) {
         },
         orderBy: { createdAt: "desc" },
       })
-      return NextResponse.json(posts)
+
+      // Add phone number to posts where it's included
+      const postsWithPhone = posts.map((post) => ({
+        ...post,
+        phoneNumber: post.includePhone ? post.author.phone : undefined,
+      }))
+
+      return NextResponse.json(postsWithPhone)
     } else if (user.role === "TUTOR") {
       // Tutors can see posts they've viewed or preview of unviewed posts
       const posts = await prisma.post.findMany({
@@ -54,8 +61,13 @@ export async function GET(request: NextRequest) {
         ...post,
         content: post.views.length > 0 ? post.content : "Content hidden - Spend 1 coin to view",
         canView: post.views.length > 0,
-        phoneNumber: post.phoneViews.length > 0 ? post.author.phone : "Hidden - Spend 2 coins to view",
-        phoneRevealed: post.phoneViews.length > 0,
+        phoneNumber:
+          post.includePhone && post.phoneViews.length > 0
+            ? post.author.phone
+            : post.includePhone
+              ? "Hidden - Spend 2 coins to view"
+              : undefined,
+        phoneRevealed: post.includePhone && post.phoneViews.length > 0,
       }))
 
       return NextResponse.json(processedPosts)
@@ -71,7 +83,13 @@ export async function GET(request: NextRequest) {
         },
         orderBy: { createdAt: "desc" },
       })
-      return NextResponse.json(posts)
+
+      const postsWithPhone = posts.map((post) => ({
+        ...post,
+        phoneNumber: post.includePhone ? post.author.phone : undefined,
+      }))
+
+      return NextResponse.json(postsWithPhone)
     }
   } catch (error) {
     console.error("Get posts error:", error)
@@ -81,7 +99,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { title, content, userEmail } = await request.json()
+    const { title, content, type, includePhone, userEmail } = await request.json()
 
     if (!userEmail) {
       return NextResponse.json({ error: "User email is required" }, { status: 400 })
@@ -95,11 +113,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Only students can create posts" }, { status: 403 })
     }
 
-    if (!user.phoneVerified) {
-      return NextResponse.json({ error: "Phone number must be verified before posting" }, { status: 403 })
+    if (includePhone && !user.phoneVerified) {
+      return NextResponse.json({ error: "Phone number must be verified to include in posts" }, { status: 403 })
     }
 
-    if (!user.phone || user.phone.length !== 11) {
+    if (includePhone && (!user.phone || user.phone.length !== 11)) {
       return NextResponse.json({ error: "Valid 11-digit phone number is required" }, { status: 400 })
     }
 
@@ -107,6 +125,8 @@ export async function POST(request: NextRequest) {
       data: {
         title,
         content,
+        type: type || "TUITION",
+        includePhone: includePhone || false,
         authorId: user.id,
       },
       include: {

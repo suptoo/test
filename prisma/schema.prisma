@@ -16,6 +16,11 @@ enum UserRole {
   ADMIN
 }
 
+enum PostType {
+  TUITION
+  ASSIGNMENT
+}
+
 enum TransactionType {
   PURCHASE
   SPEND
@@ -47,7 +52,9 @@ model Post {
   id          String   @id @default(cuid())
   title       String
   content     String
+  type        PostType @default(TUITION)
   authorId    String
+  includePhone Boolean @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

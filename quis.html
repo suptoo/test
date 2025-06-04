@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coding-Phobia Quiz</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --gradient1: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+            --gradient2: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+            --gradient3: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+            --gradient4: linear-gradient(120deg, #f093fb 0%, #f5576c 100%);
+            --gradient5: linear-gradient(120deg, #96fbc4 0%, #f9f586 100%);
+            --gradient6: linear-gradient(120deg, #fccb90 0%, #d57eeb 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #c2e9fb 0%, #a1c4fd 100%);
+            min-height: 100vh;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 2rem;
+            padding: 3rem 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+            text-align: center;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #6c7a93;
+            font-size: 1.2rem;
+        }
+
+        .chapters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            padding: 1rem 0;
+        }
+
+        .chapter-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            transition: all 0.4s ease;
+        }
+
+        .chapter-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 12px 40px rgba(31, 38, 135, 0.15);
+        }
+
+        .chapter-card:nth-child(1) .chapter-icon { background: var(--gradient1); }
+        .chapter-card:nth-child(2) .chapter-icon { background: var(--gradient2); }
+        .chapter-card:nth-child(3) .chapter-icon { background: var(--gradient3); }
+        .chapter-card:nth-child(4) .chapter-icon { background: var(--gradient4); }
+        .chapter-card:nth-child(5) .chapter-icon { background: var(--gradient5); }
+        .chapter-card:nth-child(6) .chapter-icon { background: var(--gradient6); }
+
+        .chapter-header {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .chapter-icon {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1rem;
+            color: white;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .chapter-info h2 {
+            color: #2d3748;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .chapter-info p {
+            color: #6c7a93;
+            font-size: 1rem;
+        }
+
+        .exam-list {
+            list-style: none;
+            margin: 1rem 0;
+        }
+
+        .exam-item {
+            margin-bottom: 0.75rem;
+        }
+
+        .exam-link {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.25rem;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 1rem;
+            color: #2d3748;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            font-weight: 500;
+        }
+
+        .exam-link:hover {
+            background: white;
+            transform: translateX(8px);
+            box-shadow: 0 4px 15px rgba(31, 38, 135, 0.1);
+        }
+
+        .exam-link:hover i {
+            transform: rotate(360deg);
+            color: #f6d365;
+        }
+
+        .exam-link i {
+            transition: all 0.4s ease;
+        }
+
+        .exam-link.locked {
+            opacity: 0.7;
+            cursor: not-allowed;
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .exam-link.locked:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .chapter-status {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 2px solid rgba(0, 0, 0, 0.05);
+            color: #6c7a93;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.5);
+            color: #2d3748;
+        }
+
+        .status-badge i {
+            margin-right: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .header {
+                padding: 2rem 1.5rem;
+            }
+
+            .header h1 {
+                font-size: 2.5rem;
+            }
+
+            .chapters-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Fun animations */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .chapter-icon {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Coding-Phobia Quiz</h1>
+            <p>Explore exciting chapters and test your knowledge ✨</p>
+        </header>
+
+        <main class="chapters-grid">
+         
+        </main>
+    </div>
+
+    <script>
+        const chapters = [
+            { title: 'Introduction', subtitle: 'Start Here!', icon: 'fas fa-star' },
+            { title: 'Basics', subtitle: 'Building Blocks', icon: 'fas fa-cubes' },
+            { title: 'Advanced', subtitle: 'Level Up!', icon: 'fas fa-rocket' },
+            { title: 'Expert', subtitle: 'Challenge Time', icon: 'fas fa-crown',  },
+            { title: 'Master', subtitle: 'Pro Skills', icon: 'fas fa-diamond',  },
+            { title: 'Final', subtitle: 'Ultimate Test', icon: 'fas fa-trophy', }
+        ];
+
+        function createChapterCard(chapter, index) {
+            return `
+                <div class="chapter-card">
+                    <div class="chapter-header">
+                        <div class="chapter-icon">
+                            <i class="${chapter.icon}"></i>
+                        </div>
+                        <div class="chapter-info">
+                            <h2>Chapter ${index + 1}</h2>
+                            <p>${chapter.title} - ${chapter.subtitle}</p>
+                        </div>
+                    </div>
+
+                    <ul class="exam-list">
+                        ${Array.from({length: 5}, (_, i) => `
+                            <li class="exam-item">
+                                <a href="#" class="exam-link ${chapter.locked ? 'locked' : ''}">
+                                    <span>Exam ${index + 1}.${i + 1}</span>
+                                    <i class="fas fa-chevron-circle-right"></i>
+                                </a>
+                            </li>
+                        `).join('')}
+                    </ul>
+
+                    <div class="chapter-status">
+                        <span>${chapter.locked ? 'Complete previous chapter to unlock' : 'Ready to start!'}</span>
+                        <span class="status-badge">
+                            ${chapter.locked ? 
+                                '<i class="fas fa-lock"></i> Locked' : 
+                                '<i class="fas fa-play-circle"></i> Available'}
+                        </span>
+                    </div>
+                </div>
+            `;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const grid = document.querySelector('.chapters-grid');
+            grid.innerHTML = chapters.map((chapter, index) => createChapterCard(chapter, index)).join('');
+        });
+    </script>
+</body>
+</html>
