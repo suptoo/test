@@ -36,11 +36,15 @@ export async function GET(request: NextRequest) {
       const postsWithPhone = posts.map((post) => ({
         ...post,
         phoneNumber: post.includePhone ? post.author.phone : undefined,
+        location: post.content.includes("Location:")
+          ? post.content.split("Location:")[1]?.split("\n")[0]?.trim()
+          : "Not specified",
+        status: "Active",
       }))
 
       return NextResponse.json(postsWithPhone)
     } else if (user.role === "TUTOR") {
-      // Tutors can see posts they've viewed or preview of unviewed posts
+      // Tutors can see all posts
       const posts = await prisma.post.findMany({
         include: {
           author: {
@@ -68,6 +72,9 @@ export async function GET(request: NextRequest) {
               ? "Hidden - Spend 2 coins to view"
               : undefined,
         phoneRevealed: post.includePhone && post.phoneViews.length > 0,
+        location: post.content.includes("Location:")
+          ? post.content.split("Location:")[1]?.split("\n")[0]?.trim()
+          : "Not specified",
       }))
 
       return NextResponse.json(processedPosts)
@@ -87,6 +94,9 @@ export async function GET(request: NextRequest) {
       const postsWithPhone = posts.map((post) => ({
         ...post,
         phoneNumber: post.includePhone ? post.author.phone : undefined,
+        location: post.content.includes("Location:")
+          ? post.content.split("Location:")[1]?.split("\n")[0]?.trim()
+          : "Not specified",
       }))
 
       return NextResponse.json(postsWithPhone)
@@ -99,7 +109,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { title, content, type, includePhone, userEmail } = await request.json()
+    const { title, content, type, includePhone, userEmail, location, phoneNumber, budget } = await request.json()
 
     if (!userEmail) {
       return NextResponse.json({ error: "User email is required" }, { status: 400 })
@@ -113,20 +123,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Only students can create posts" }, { status: 403 })
     }
 
-    if (includePhone && !user.phoneVerified) {
-      return NextResponse.json({ error: "Phone number must be verified to include in posts" }, { status: 403 })
+    // Update user's phone number if provided
+    if (phoneNumber && phoneNumber !== user.phone) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          phone: phoneNumber,
+          phoneVerified: true, // Auto-verify for demo
+        },
+      })
     }
 
-    if (includePhone && (!user.phone || user.phone.length !== 11)) {
-      return NextResponse.json({ error: "Valid 11-digit phone number is required" }, { status: 400 })
-    }
+    // Create detailed content with location and requirements
+    const detailedContent = `Location: ${location}
+Phone: ${phoneNumber}
+${budget ? `Budget: ${budget}` : ""}
+
+Requirements:
+${content}`
 
     const post = await prisma.post.create({
       data: {
-        title,
-        content,
+        title: title || `Tutor needed in ${location}`,
+        content: detailedContent,
         type: type || "TUITION",
-        includePhone: includePhone || false,
+        includePhone: includePhone || true,
         authorId: user.id,
       },
       include: {
